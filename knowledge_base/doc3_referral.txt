@@ -1,0 +1,9 @@
+Title: The GP Referral Process to a Specialist
+
+In the NHS system, patients generally cannot book an appointment with a hospital specialist directly. A GP acts as the first point of contact and, if needed, issues a referral letter to a specialist or hospital department.
+
+The referral process typically works as follows: the patient sees their GP, the GP assesses the symptoms, and if the condition requires specialist input, the GP submits an electronic referral through the NHS e-Referral Service. The patient can often choose from a list of hospitals or clinics offering the relevant service.
+
+Waiting times between referral and the first specialist appointment vary widely depending on the specialty and urgency, ranging from a few weeks for urgent cases to several months for routine, non-urgent conditions.
+
+International students unfamiliar with this system sometimes expect to see a specialist directly, as is common in other healthcare systems, and are confused when told they must first be assessed by a GP.
