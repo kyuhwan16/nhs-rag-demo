@@ -122,7 +122,41 @@ function buildVocab(tokenizedDocs){
   return vocab;
 }
 
-  // wip: still need to actually compute tfidf + match sklearn's idf formula
+function tfidfVectors(tokenizedDocs){
+  const vocab = buildVocab(tokenizedDocs);
+  const N = tokenizedDocs.length;
+  const df = new Array(vocab.size).fill(0);
+
+  const rawCounts = tokenizedDocs.map(tokens => {
+    const counts = new Array(vocab.size).fill(0);
+    tokens.forEach(t => { counts[vocab.get(t)] += 1; });
+    return counts;
+  });
+
+  rawCounts.forEach(counts => {
+    counts.forEach((c, i) => { if(c > 0) df[i] += 1; });
+  });
+
+  // smooth idf, matches sklearn default: idf = ln((1+N)/(1+df)) + 1
+  const idf = df.map(d => Math.log((1 + N) / (1 + d)) + 1);
+
+  const vectors = rawCounts.map(counts => {
+    const v = counts.map((c, i) => c * idf[i]);
+    const norm = Math.sqrt(v.reduce((s, x) => s + x * x, 0)) || 1;
+    return v.map(x => x / norm);
+  });
+
+  return { vocab, idf, vectors };
+}
+
+function vectorizeQuery(tokens, vocab, idf){
+  const v = new Array(vocab.size).fill(0);
+  tokens.forEach(t => { if(vocab.has(t)) v[vocab.get(t)] += 1; });
+  const withIdf = v.map((c, i) => c * idf[i]);
+  const norm = Math.sqrt(withIdf.reduce((s, x) => s + x * x, 0)) || 1;
+  return withIdf.map(x => x / norm);
+}
+
   // todo: retrieval, ui
 </script>
 
