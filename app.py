@@ -120,7 +120,7 @@ def main():
     print("=" * 60)
 
     docs, filenames = load_documents(KB_FOLDER)
-    if docs == []:
+    if not docs:
         print("ERROR: No documents found in knowledge_base/. "
               "Check the folder path.")
         return
