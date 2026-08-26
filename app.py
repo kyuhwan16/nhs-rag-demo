@@ -10,6 +10,8 @@ HOW TO RUN:
 """
 
 import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 KB_FOLDER = os.path.join(os.path.dirname(__file__), "knowledge_base")
 
@@ -27,10 +29,37 @@ def load_documents(folder):
     return docs, filenames
 
 
+def build_index(docs):
+    """Turn documents into TF-IDF vectors."""
+    vectorizer = TfidfVectorizer(stop_words="english")
+    doc_vectors = vectorizer.fit_transform(docs)
+    return vectorizer, doc_vectors
+
+
+def retrieve(query, vectorizer, doc_vectors, docs, filenames, top_k=1):
+    """Find the most relevant document(s) for a query."""
+    query_vector = vectorizer.transform([query])
+    similarities = cosine_similarity(query_vector, doc_vectors).flatten()
+    ranked_indices = similarities.argsort()[::-1][:top_k]
+    results = []
+    for idx in ranked_indices:
+        results.append({
+            "filename": filenames[idx],
+            "text": docs[idx],
+            "score": similarities[idx],
+        })
+    return results
+
+
 def main():
     docs, filenames = load_documents(KB_FOLDER)
     print(f"Loaded {len(docs)} knowledge base documents: {filenames}")
-    # TODO: retrieval + answer generation
+    vectorizer, doc_vectors = build_index(docs)
+
+    query = input("Your question: ").strip()
+    results = retrieve(query, vectorizer, doc_vectors, docs, filenames, top_k=1)
+    print(results[0])
+    # TODO: answer generation, proper loop, out-of-scope handling
 
 
 if __name__ == "__main__":
