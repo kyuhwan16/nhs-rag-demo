@@ -171,6 +171,7 @@ function retrieve(query){
   const qVec = vectorizeQuery(qTokens, docVocab, docIdf);
   const scores = docVectors.map(v => cosineSim(qVec, v));
   let bestIdx = 0;
+  // making sure this still falls back to bestIdx=0 when every score is 0
   scores.forEach((s, i) => { if(s > scores[bestIdx]) bestIdx = i; });
   return { doc: KB[bestIdx], score: scores[bestIdx] };
 }
