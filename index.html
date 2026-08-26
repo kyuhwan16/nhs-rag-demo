@@ -114,7 +114,16 @@ function tokenize(text){
     .filter(t => t.length > 1 && !STOPWORDS.has(t));
 }
 
-  // todo: tfidf, retrieval, ui
+function buildVocab(tokenizedDocs){
+  const vocab = new Map();
+  tokenizedDocs.forEach(tokens => {
+    tokens.forEach(t => { if(!vocab.has(t)) vocab.set(t, vocab.size); });
+  });
+  return vocab;
+}
+
+  // wip: still need to actually compute tfidf + match sklearn's idf formula
+  // todo: retrieval, ui
 </script>
 
 </body>
