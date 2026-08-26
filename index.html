@@ -157,7 +157,25 @@ function vectorizeQuery(tokens, vocab, idf){
   return withIdf.map(x => x / norm);
 }
 
-  // todo: retrieval, ui
+function cosineSim(a, b){
+  let dot = 0;
+  for(let i = 0; i < a.length; i++) dot += a[i] * b[i];
+  return dot;
+}
+
+const docTokens = KB.map(d => tokenize(d.text));
+const { vocab: docVocab, idf: docIdf, vectors: docVectors } = tfidfVectors(docTokens);
+
+function retrieve(query){
+  const qTokens = tokenize(query);
+  const qVec = vectorizeQuery(qTokens, docVocab, docIdf);
+  const scores = docVectors.map(v => cosineSim(qVec, v));
+  let bestIdx = 0;
+  scores.forEach((s, i) => { if(s > scores[bestIdx]) bestIdx = i; });
+  return { doc: KB[bestIdx], score: scores[bestIdx] };
+}
+
+  // todo: answer gen, ui
 </script>
 
 </body>
