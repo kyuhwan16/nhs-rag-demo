@@ -1,11 +1,8 @@
 """
-NHS Navigation RAG Agent - Streamlit Web Version
-==================================================
-Same retrieval logic as app.py (TF-IDF + cosine similarity), wrapped in a
-simple web interface so it can be opened from ANY computer's browser via
-a URL, with no local Python installation required at demo time.
+Same retrieval logic as app.py, just wrapped in a Streamlit UI so it
+runs in a browser instead of a terminal.
 
-Run locally with: streamlit run web_app.py
+Run: streamlit run web_app.py
 """
 
 import os

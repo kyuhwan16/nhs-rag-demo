@@ -1,42 +1,16 @@
 """
-NHS Navigation RAG Agent - Minimal Working Prototype
-======================================================
+NHS Navigation RAG Agent - CLI prototype
 
-WHAT THIS DOES (in plain English, for explaining in your viva):
-1. We have a small "knowledge base" - a handful of text documents about
-   how international students navigate the NHS (GP registration, 111,
-   referrals, IHS, emergency vs urgent care).
-2. When a user types a question, we convert both the question and every
-   document into TF-IDF vectors (a way of representing text as numbers
-   based on important/distinctive words).
-3. We compute cosine similarity between the question and every document
-   to find which document(s) are most relevant - this is the
-   "Retrieval" step of RAG.
-4. We then generate a grounded answer using ONLY the retrieved
-   document's content (extracting the most relevant sentences) - this
-   is a lightweight, fully-offline stand-in for the "Generation" step.
-   (In a full version, this step would call an LLM API such as GPT-4
-   to paraphrase the retrieved content fluently - the retrieval logic
-   here is identical either way, only the generation step changes.)
-5. We show which document the answer came from - this is the
-   "grounding" / explainability part that directly relates to RQ1
-   (does RAG improve factual accuracy vs a plain chatbot that just
-   makes things up).
+Small RAG-style demo: a handful of NHS-related docs (GP reg, 111,
+referrals, IHS, emergency vs urgent) get TF-IDF'd, the question gets
+compared against them with cosine similarity, and the top match's
+most relevant sentences are pulled out as the "answer". No LLM call -
+extractive only, so it's fully offline and doesn't need an API key.
+Source doc + similarity score is always shown so it's clear where the
+answer came from (and if the score's too low it just says so instead
+of guessing).
 
-WHY THIS DESIGN (for Q&A defence):
-- TF-IDF + cosine similarity was chosen over a full embedding model
-  (e.g. OpenAI embeddings, sentence-transformers) because it requires
-  no API key and no internet connection, making the live demo more
-  reliable. The trade-off is that it captures keyword overlap rather
-  than deep semantic meaning - a known limitation, documented as such.
-- Extractive answer generation (returning the most relevant sentence(s)
-  verbatim from the source) was used instead of calling an LLM for
-  generation, again for demo reliability within the project timeframe.
-  This is disclosed as a scope decision / limitation, not hidden.
-
-HOW TO RUN:
-  python app.py
-Then type a question and press Enter. Type 'quit' to exit.
+Run: python app.py, then type a question. 'quit' to exit.
 """
 
 import os

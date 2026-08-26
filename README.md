@@ -1,49 +1,40 @@
 # nhs-rag-demo
 
-A retrieval-augmented generation (RAG) prototype that helps international
-students navigate NHS GP registration, referrals, NHS 111, the Immigration
-Health Surcharge, and emergency vs urgent care.
+Small RAG prototype for helping international students navigate the NHS
+(GP registration, referrals, 111, IHS, emergency vs urgent care).
 
-Same retrieval + extractive-answer logic (TF-IDF + cosine similarity),
-implemented three times:
+Same retrieval logic (TF-IDF + cosine similarity), done three ways so
+the demo doesn't depend on anything being installed on the day:
 
-- **`app.py`** - Python CLI prototype (scikit-learn `TfidfVectorizer` +
-  `cosine_similarity`). Run with `python app.py`.
-- **`web_app.py`** - Streamlit web version of the exact same logic. Run
-  with `streamlit run web_app.py`.
-- **`index.html`** - fully offline, dependency-free JavaScript
-  reimplementation used for the live demo. No server, no API key, no
-  Python runtime needed — just open the file in a browser.
+- `app.py` - CLI version, sklearn's `TfidfVectorizer` + `cosine_similarity`
+- `web_app.py` - same logic, Streamlit UI (`streamlit run web_app.py`)
+- `index.html` - JS reimplementation, no server/API key/Python needed,
+  just open it in a browser
 
-`knowledge_base/` holds the five source documents shared by all three
-versions (loaded from disk in the Python versions, embedded as string
-constants in `index.html`).
+`knowledge_base/` has the 5 source docs (read from disk in the python
+versions, embedded as strings in index.html since local files can't be
+fetch()'d from a browser).
 
-## How it works
+## how it works
 
-1. The question and all 5 documents are converted into TF-IDF vectors
-2. Cosine similarity picks the single closest-matching document
-3. Within that document, the same TF-IDF + cosine similarity method
-   scores individual sentences and pulls out the top 1-2 sentences
-   verbatim (no paraphrasing / no LLM call)
-4. The source filename + similarity score is always shown next to the
-   answer
-5. If the best score is too low (under 0.05), it reports that no
-   relevant document was found instead of guessing
+Question + all 5 docs -> TF-IDF vectors -> cosine similarity picks the
+closest doc -> same trick again at sentence level to pull out the 1-2
+most relevant sentences from that doc as the answer (no LLM, extractive
+only). Source doc + score always shown next to the answer. If the score's
+too low (<0.05) it just says it can't find anything relevant instead of
+making something up.
 
-## Usage
+## running it
 
 ```
 pip install -r requirements.txt
-
-python app.py              # CLI version
-streamlit run web_app.py    # web version
+python app.py              # cli
+streamlit run web_app.py   # web
 ```
 
-Or just double-click `index.html` for the offline JS version — no
-install step at all.
+or just open `index.html` directly, no install needed.
 
-## Note
+## note
 
-Academic dissertation project prototype, not a substitute for real NHS
-advice. Content summarised from NHS.uk / UKCISA guidance.
+Dissertation prototype, not real medical/NHS advice. Doc content
+summarised from NHS.uk / UKCISA.
