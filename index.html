@@ -12,12 +12,43 @@
 
 <header>
   <div class="wrap">
+    <span class="badge">Runs fully offline · no server, no API key</span>
     <h1>NHS Navigation RAG Agent</h1>
-    <p>test</p>
+    <p>A retrieval-augmented prototype helping international students navigate NHS GP registration, referrals, NHS&nbsp;111, the Immigration Health Surcharge, and emergency vs urgent care. Every answer is grounded in one of the 5 source documents below and shown with its retrieval score.</p>
   </div>
 </header>
 
 <main>
+
+  <div class="card">
+    <div class="section-label">Ask a question</div>
+    <div class="row">
+      <input type="text" id="queryInput" placeholder="e.g. How do I register with a GP?" autocomplete="off">
+      <button class="btn-primary" id="askBtn">Ask</button>
+    </div>
+    <div class="examples" id="examples"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-label" id="kbToggle" style="cursor:pointer; user-select:none;">▸ Knowledge base (5 documents loaded — click to view)</div>
+    <div id="kbList"></div>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="card">
+    <details class="howitworks">
+      <summary>How this works (retrieval pipeline)</summary>
+      <ol>
+        <li><b>Retrieval:</b> the question and all 5 NHS documents are converted into TF‑IDF vectors (word‑importance scores), computed in JavaScript in this page — no external API.</li>
+        <li><b>Ranking:</b> cosine similarity between the question vector and each document vector picks the single best‑matching document.</li>
+        <li><b>Extractive answer:</b> within that document, the same TF‑IDF + cosine similarity method scores individual sentences, and the top sentence(s) are returned verbatim — nothing is paraphrased or invented.</li>
+        <li><b>Explainability:</b> the source filename and similarity score are always shown, so every answer is traceable back to its document.</li>
+        <li><b>Out‑of‑scope handling:</b> if the best score is below a threshold (0.05), the system reports "no relevant document found" instead of guessing.</li>
+      </ol>
+    </details>
+  </div>
+
 </main>
 
 <footer>
@@ -198,7 +229,66 @@ function generateAnswer(query, docText){
   return orderedIdx.map(i => sentences[i]).join(" ");
 }
 
-  // todo: ui
+const resultsEl = document.getElementById("results");
+const inputEl = document.getElementById("queryInput");
+
+function renderKbList(){
+  const el = document.getElementById("kbList");
+  el.innerHTML = KB.map(d => `<div class="kb-item"><code>${d.filename}</code><span>${d.text.split("\n")[0].replace("Title: ","")}</span></div>`).join("");
+}
+renderKbList();
+
+document.getElementById("kbToggle").addEventListener("click", function(){
+  const el = document.getElementById("kbList");
+  el.classList.toggle("open");
+  this.textContent = (el.classList.contains("open") ? "▾" : "▸") + " Knowledge base (5 documents loaded — click to view)";
+});
+
+const examplesEl = document.getElementById("examples");
+EXAMPLES.forEach(ex => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = ex;
+  b.addEventListener("click", () => { inputEl.value = ex; runQuery(ex); });
+  examplesEl.appendChild(b);
+});
+
+function runQuery(query){
+  if(!query || !query.trim()) return;
+  const { doc, score } = retrieve(query);
+  const card = document.createElement("div");
+
+  if(score < 0.05){
+    card.className = "result-card warn";
+    card.innerHTML = `
+      <div class="q">Question: <b>${escapeHtml(query)}</b></div>
+      <div class="answer">No sufficiently relevant document found in the knowledge base — this question is likely outside the system's current scope (GP registration, referrals, NHS 111, IHS, emergency vs urgent care).</div>
+      <div class="meta">
+        <span>Best similarity score:</span>
+        <span class="scorebar"><span style="width:${Math.min(score,1)*100}%"></span></span>
+        <code>${score.toFixed(2)}</code>
+      </div>`;
+  } else {
+    const answer = generateAnswer(query, doc.text);
+    card.className = "result-card ok";
+    card.innerHTML = `
+      <div class="q">Question: <b>${escapeHtml(query)}</b></div>
+      <div class="answer">${escapeHtml(answer)}</div>
+      <div class="meta">
+        <span>Retrieved source:</span> <code>${doc.filename}</code>
+        <span class="scorebar"><span style="width:${Math.min(score,1)*100}%"></span></span>
+        <code>similarity ${score.toFixed(2)}</code>
+      </div>`;
+  }
+  resultsEl.prepend(card);
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+document.getElementById("askBtn").addEventListener("click", () => runQuery(inputEl.value));
+inputEl.addEventListener("keydown", e => { if(e.key === "Enter") runQuery(inputEl.value); });
 </script>
 
 </body>
