@@ -176,7 +176,29 @@ function retrieve(query){
   return { doc: KB[bestIdx], score: scores[bestIdx] };
 }
 
-  // todo: answer gen, ui
+function splitSentences(text){
+  const clean = text.replace(/\n/g, " ").trim();
+  return clean.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 20);
+}
+
+function generateAnswer(query, docText){
+  const body = docText.replace(/^Title:.*(\n|$)/, "");
+  const sentences = splitSentences(body);
+  if(sentences.length === 0) return "No relevant information found in the knowledge base.";
+
+  const sentTokens = sentences.map(s => tokenize(s));
+  const qTokens = tokenize(query);
+  const { vocab, idf, vectors } = tfidfVectors([...sentTokens, qTokens]);
+  const qVec = vectors[vectors.length - 1];
+  const sentVecs = vectors.slice(0, -1);
+
+  const sims = sentVecs.map(v => cosineSim(qVec, v));
+  const ranked = sims.map((s, i) => [s, i]).sort((a, b) => b[0] - a[0]).slice(0, 2);
+  const orderedIdx = ranked.map(r => r[1]).sort((a, b) => a - b);
+  return orderedIdx.map(i => sentences[i]).join(" ");
+}
+
+  // todo: ui
 </script>
 
 </body>
